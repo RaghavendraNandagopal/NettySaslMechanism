@@ -1,4 +1,4 @@
-package com.shufflesort.nettysasl;
+package com.shufflesort.nettysasl.decoders;
 
 import javax.security.sasl.SaslException;
 
@@ -8,15 +8,21 @@ import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.handler.codec.frame.FrameDecoder;
 
-public class ServerUnwrapMessageDecoder extends FrameDecoder {
+import com.shufflesort.nettysasl.SaslNettyClient;
+import com.shufflesort.nettysasl.SaslNettyClientState;
+import com.shufflesort.nettysasl.model.ControlMessage;
+import com.shufflesort.nettysasl.model.SaslMessageToken;
+import com.shufflesort.nettysasl.model.UnixTime;
+
+public class ClientUnwrapMessageDecoder extends FrameDecoder {
 
     @Override
     protected Object decode(final ChannelHandlerContext ctx, final Channel ch,
             ChannelBuffer buf) throws Exception {
 
-        final SaslNettyServer saslNettyServer = SaslNettyServerState.getSaslNettyServer
+        final SaslNettyClient saslNettyClient = SaslNettyClientState.getSaslNettyClient
                 .get(ch);
-        final boolean isUnwrap = isUseUnwrap(saslNettyServer);
+        final boolean isUnwrap = isUseUnwrap(saslNettyClient);
         if (isUnwrap) {
             // Make sure that we have received at least a int
             long available = buf.readableBytes();
@@ -43,12 +49,12 @@ public class ServerUnwrapMessageDecoder extends FrameDecoder {
 
                 byte[] unWrappedPayLoad = null;
                 try {
-                    unWrappedPayLoad = saslNettyServer.unwrap(
+                    unWrappedPayLoad = saslNettyClient.unwrap(
                             buf.readBytes(wrappedPayLoadLength).array(), 0,
                             wrappedPayLoadLength);
                 } catch (final SaslException se) {
                     try {
-                        saslNettyServer.dispose();
+                        saslNettyClient.dispose();
                     } catch (final SaslException ignored) {
                     }
                     throw se;
@@ -56,11 +62,11 @@ public class ServerUnwrapMessageDecoder extends FrameDecoder {
 
                 buf = ChannelBuffers.dynamicBuffer();
                 buf.writeBytes(unWrappedPayLoad);
-                System.out.println("Server Unwrapped the message successfully");
+                System.out.println("Client Unwrapped the message successfully");
             }
         }
 
-        System.out.println("Server MessageDecoder called");
+        System.out.println("Client MessageDecoder called");
 
         // Make sure that we have received at least a short
         long available = buf.readableBytes();
@@ -135,31 +141,31 @@ public class ServerUnwrapMessageDecoder extends FrameDecoder {
         return null;
     }
 
-    private boolean isUseUnwrap(final SaslNettyServer saslNettyServer) {
+    private boolean isUseUnwrap(final SaslNettyClient saslNettyClient) {
         // If authentication is not completed yet and channel connection is not
         // established, then return the object as it is.
-        if (saslNettyServer == null) {
+        if (saslNettyClient == null) {
             System.out
-                    .println("Unwrapping Server Message decoder called, saslNettyServer is null hence returning the same object");
+                    .println("Unwrapping Client Message decoder called, saslNettyClient is null hence returning the same object");
             return false;
         }
 
         // If sasl authentication is not completed yet.
-        if (saslNettyServer != null && !saslNettyServer.isComplete()) {
+        if (saslNettyClient != null && !saslNettyClient.isComplete()) {
             System.out
-                    .println("Unwrapping Server Message decoder called, saslNettyServer is not authenticated at first place, hence returning the same object");
+                    .println("Unwrapping Client Message decoder called, saslNettyClient is not authenticated at first place, hence returning the same object");
             return false;
         }
 
         // If wrap functionality is not required, then send
         // the object as it is.
-        if (saslNettyServer != null && !saslNettyServer.isUseWrap()) {
+        if (saslNettyClient != null && !saslNettyClient.isUseWrap()) {
             System.out
-                    .println("Unwrapping Server Message decoder called, saslNettyServer is not null but useWrap is false hence returning the same object");
+                    .println("Unwrapping Client Message decoder called, saslNettyClient is not null but useWrap is false hence returning the same object");
             return false;
         }
 
-        System.out.println("Unwrapping Server pay load message ");
+        System.out.println("Unwrapping Client pay load message ");
         return true;
     }
 

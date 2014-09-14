@@ -1,8 +1,12 @@
-package com.shufflesort.nettysasl;
+package com.shufflesort.nettysasl.encoders;
 
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.handler.codec.oneone.OneToOneEncoder;
+
+import com.shufflesort.nettysasl.model.ControlMessage;
+import com.shufflesort.nettysasl.model.SaslMessageToken;
+import com.shufflesort.nettysasl.model.UnixTime;
 
 public class MessageEncoder extends OneToOneEncoder {
 

@@ -1,4 +1,4 @@
-package com.shufflesort.nettysasl;
+package com.shufflesort.nettysasl.model;
 
 import java.io.IOException;
 import java.util.Date;
@@ -20,7 +20,7 @@ public class UnixTime {
      * 
      * @throws Exception
      */
-    ChannelBuffer buffer() throws IOException {
+    public ChannelBuffer buffer() throws IOException {
         final ChannelBufferOutputStream bout = new ChannelBufferOutputStream(
                 ChannelBuffers.directBuffer(encodeLength()));
         write(bout);

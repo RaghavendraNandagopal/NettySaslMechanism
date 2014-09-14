@@ -1,4 +1,4 @@
-package com.shufflesort.nettysasl;
+package com.shufflesort.nettysasl.encoders;
 
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
@@ -10,6 +10,9 @@ import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.handler.codec.oneone.OneToOneEncoder;
+
+import com.shufflesort.nettysasl.SaslNettyClient;
+import com.shufflesort.nettysasl.SaslNettyServer;
 
 public class WrapMessageEncoder extends OneToOneEncoder {
 

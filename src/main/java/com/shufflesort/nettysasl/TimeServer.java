@@ -14,6 +14,10 @@ import org.jboss.netty.channel.group.ChannelGroup;
 import org.jboss.netty.channel.group.DefaultChannelGroup;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 
+import com.shufflesort.nettysasl.decoders.ServerUnwrapMessageDecoder;
+import com.shufflesort.nettysasl.encoders.MessageEncoder;
+import com.shufflesort.nettysasl.encoders.ServerWrapMessageEncoder;
+
 public class TimeServer {
 
     static final ChannelGroup allChannels = new DefaultChannelGroup(

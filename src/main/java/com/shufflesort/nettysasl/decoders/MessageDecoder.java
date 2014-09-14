@@ -1,9 +1,13 @@
-package com.shufflesort.nettysasl;
+package com.shufflesort.nettysasl.decoders;
 
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.handler.codec.frame.FrameDecoder;
+
+import com.shufflesort.nettysasl.model.ControlMessage;
+import com.shufflesort.nettysasl.model.SaslMessageToken;
+import com.shufflesort.nettysasl.model.UnixTime;
 
 public class MessageDecoder extends FrameDecoder {
 

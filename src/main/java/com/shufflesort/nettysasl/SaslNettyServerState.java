@@ -3,7 +3,7 @@ package com.shufflesort.nettysasl;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelLocal;
 
-final class SaslNettyServerState {
+public final class SaslNettyServerState {
 
     public static final ChannelLocal<SaslNettyServer> getSaslNettyServer = new ChannelLocal<SaslNettyServer>() {
         @Override

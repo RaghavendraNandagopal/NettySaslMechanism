@@ -1,4 +1,4 @@
-package com.shufflesort.nettysasl;
+package com.shufflesort.nettysasl.model;
 
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBufferOutputStream;
@@ -34,7 +34,7 @@ public class SaslMessageToken {
      * 
      * @throws Exception
      */
-    ChannelBuffer buffer() throws Exception {
+    public ChannelBuffer buffer() throws Exception {
         final ChannelBufferOutputStream bout = new ChannelBufferOutputStream(
                 ChannelBuffers.directBuffer(encodeLength()));
         final short identifier = -500;

@@ -1,4 +1,4 @@
-package com.shufflesort.nettysasl;
+package com.shufflesort.nettysasl.encoders;
 
 import javax.security.sasl.SaslException;
 
@@ -9,7 +9,10 @@ import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.handler.codec.oneone.OneToOneEncoder;
 
-public class ClientWrapMessageEncoder extends OneToOneEncoder {
+import com.shufflesort.nettysasl.SaslNettyServer;
+import com.shufflesort.nettysasl.SaslNettyServerState;
+
+public class ServerWrapMessageEncoder extends OneToOneEncoder {
 
     @Override
     protected Object encode(final ChannelHandlerContext ctx, final Channel ch,
@@ -18,34 +21,34 @@ public class ClientWrapMessageEncoder extends OneToOneEncoder {
 
         final Channel channel = ctx.getChannel();
 
-        final SaslNettyClient saslNettyClient = SaslNettyClientState.getSaslNettyClient
+        final SaslNettyServer saslNettyServer = SaslNettyServerState.getSaslNettyServer
                 .get(channel);
 
         // If authentication is not completed yet and channel connection is not
         // established, then
         // return the object as it is.
-        if (saslNettyClient == null) {
+        if (saslNettyServer == null) {
             System.out
-                    .println("Wrapping Client Message encoder called, saslNettyClient is null hence returning the same object");
+                    .println("Wrapping Server Message encoder called, saslNettyServer is null hence returning the same object");
             return obj;
         }
 
         // If sasl authentication is not completed yet.
-        if (saslNettyClient != null && !saslNettyClient.isComplete()) {
+        if (saslNettyServer != null && !saslNettyServer.isComplete()) {
             System.out
-                    .println("Wrapping Client Message encoder called, saslNettyClient is not authenticated at first place, hence returning the same object");
+                    .println("Wrapping Server Message encoder called, saslNettyServer is not authenticated at first place, hence returning the same object");
             return obj;
         }
 
         // If wrap functionality is not required, then send
         // the object as it is.
-        if (saslNettyClient != null && !saslNettyClient.isUseWrap()) {
+        if (saslNettyServer != null && !saslNettyServer.isUseWrap()) {
             System.out
-                    .println("Wrapping Client Message encoder called, saslNettyClient is not null but useWrap is false hence returning the same object");
+                    .println("Wrapping Server Message encoder called, saslNettyServer is not null but useWrap is false hence returning the same object");
             return obj;
         }
 
-        System.out.println("Wrapping Client pay load message ");
+        System.out.println("Wrapping Server pay load message ");
 
         byte[] messagePayLoad = null;
         if (obj instanceof ChannelBuffer) {
@@ -53,18 +56,18 @@ public class ClientWrapMessageEncoder extends OneToOneEncoder {
             final int length = buf.readableBytes();
             messagePayLoad = new byte[length];
             buf.markReaderIndex();
-            System.out.println("Client Message PayLoad Length: " + length);
+            System.out.println("Server Message PayLoad Length: " + length);
             buf.readBytes(messagePayLoad);
         }
 
         byte[] wrappedPayLoad = null;
 
         try {
-            wrappedPayLoad = saslNettyClient.wrap(messagePayLoad, 0,
+            wrappedPayLoad = saslNettyServer.wrap(messagePayLoad, 0,
                     messagePayLoad.length);
         } catch (final SaslException se) {
             try {
-                saslNettyClient.dispose();
+                saslNettyServer.dispose();
             } catch (final SaslException igonored) {
 
             }
@@ -83,7 +86,8 @@ public class ClientWrapMessageEncoder extends OneToOneEncoder {
             bout.close();
             wrappedPayLoad = null;
         }
-        System.out.println("Client Wrapped the message successfully");
+        System.out.println("Server Wrapped the message successfully");
         return bout.buffer();
     }
+
 }

@@ -13,7 +13,9 @@ import javax.security.sasl.Sasl;
 import javax.security.sasl.SaslException;
 import javax.security.sasl.SaslServer;
 
-class SaslNettyServer {
+import com.shufflesort.nettysasl.util.SaslUtils;
+
+public class SaslNettyServer {
 
     /** CallbackHandler for SASL DIGEST-MD5 mechanism */
     public static class SaslDigestCallbackHandler implements CallbackHandler {

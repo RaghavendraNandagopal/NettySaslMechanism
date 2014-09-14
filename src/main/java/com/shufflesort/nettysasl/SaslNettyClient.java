@@ -13,6 +13,9 @@ import javax.security.sasl.Sasl;
 import javax.security.sasl.SaslClient;
 import javax.security.sasl.SaslException;
 
+import com.shufflesort.nettysasl.model.SaslMessageToken;
+import com.shufflesort.nettysasl.util.SaslUtils;
+
 /**
  * Implements SASL logic for storm worker client processes.
  */

@@ -1,4 +1,4 @@
-package com.shufflesort.nettysasl;
+package com.shufflesort.nettysasl.util;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -11,7 +11,10 @@ import javax.security.sasl.Sasl;
 import org.apache.commons.codec.Charsets;
 import org.apache.commons.codec.binary.Base64;
 
-class SaslUtils {
+import com.shufflesort.nettysasl.SaslNettyClient;
+import com.shufflesort.nettysasl.SaslNettyServer;
+
+public class SaslUtils {
     public static final String AUTH_DIGEST_MD5 = "DIGEST-MD5";
 
     public static final String DEFAULT_REALM = "default";
@@ -61,7 +64,7 @@ class SaslUtils {
      *            as a byte array.
      * @return identifier as a char array.
      */
-    static String encodeIdentifier(final byte[] identifier) {
+    public static String encodeIdentifier(final byte[] identifier) {
         return new String(Base64.encodeBase64(identifier), Charsets.UTF_8);
     }
 
@@ -72,7 +75,7 @@ class SaslUtils {
      *            as a byte array.
      * @return password as a char array.
      */
-    static char[] encodePassword(final byte[] password) {
+    public static char[] encodePassword(final byte[] password) {
         return new String(Base64.encodeBase64(password), Charsets.UTF_8)
                 .toCharArray();
     }
@@ -95,15 +98,15 @@ class SaslUtils {
         return properties;
     }
 
-    static Map<String, String> getSaslProps() {
+    public static Map<String, String> getSaslProps() {
         return getSaslPropertiesConf();
     }
 
-    static String getSecretKey() {
+    public static String getSecretKey() {
         return "SaiRam";
     }
 
-    static String getUserName() {
+    public static String getUserName() {
         return "SaiRam";
     }
 

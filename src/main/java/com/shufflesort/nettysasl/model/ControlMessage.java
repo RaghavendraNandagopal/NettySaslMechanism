@@ -1,4 +1,4 @@
-package com.shufflesort.nettysasl;
+package com.shufflesort.nettysasl.model;
 
 import java.io.IOException;
 
@@ -6,7 +6,7 @@ import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBufferOutputStream;
 import org.jboss.netty.buffer.ChannelBuffers;
 
-enum ControlMessage {
+public enum ControlMessage {
     CLOSE_MESSAGE((short) -100), EOB_MESSAGE((short) -201), FAILURE_RESPONSE(
             (short) -400), OK_RESPONSE((short) -200), SASL_COMPLETE_REQUEST(
             (short) -203), SASL_TOKEN_MESSAGE((short) -500), SASL_TOKEN_MESSAGE_REQUEST(
@@ -18,7 +18,7 @@ enum ControlMessage {
      * @param encoded
      * @return
      */
-    static ControlMessage mkMessage(final short encoded) {
+    public static ControlMessage mkMessage(final short encoded) {
         for (final ControlMessage cm : ControlMessage.values()) {
             if (encoded == cm.code) {
                 return cm;
@@ -39,7 +39,7 @@ enum ControlMessage {
      * 
      * @throws Exception
      */
-    ChannelBuffer buffer() throws IOException {
+    public ChannelBuffer buffer() throws IOException {
         final ChannelBufferOutputStream bout = new ChannelBufferOutputStream(
                 ChannelBuffers.directBuffer(encodeLength()));
         write(bout);

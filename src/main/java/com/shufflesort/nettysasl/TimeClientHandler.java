@@ -8,6 +8,8 @@ import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelHandler;
 
+import com.shufflesort.nettysasl.model.UnixTime;
+
 public class TimeClientHandler extends SimpleChannelHandler {
 
     // private final ChannelBuffer buf = ChannelBuffers.dynamicBuffer();
