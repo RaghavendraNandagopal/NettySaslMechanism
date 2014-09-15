@@ -13,169 +13,168 @@ import javax.security.sasl.Sasl;
 import javax.security.sasl.SaslException;
 import javax.security.sasl.SaslServer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.shufflesort.nettysasl.util.SaslUtils;
 
 public class SaslNettyServer {
 
-    /** CallbackHandler for SASL DIGEST-MD5 mechanism */
-    public static class SaslDigestCallbackHandler implements CallbackHandler {
+	private static final Logger logger = LoggerFactory
+			.getLogger(SaslNettyServer.class);
 
-        private final String userName;
-        /** Used to authenticate the clients */
-        private final byte[] userPassword;
+	/** CallbackHandler for SASL DIGEST-MD5 mechanism */
+	public static class SaslDigestCallbackHandler implements CallbackHandler {
 
-        public SaslDigestCallbackHandler(final String userName,
-                final byte[] token) {
-            System.out
-                    .println("SaslDigestCallback: Creating SaslDigestCallback handler "
-                            + "with user name: " + userName);
-            this.userName = userName;
-            userPassword = token;
-        }
+		private final String userName;
+		/** Used to authenticate the clients */
+		private final byte[] userPassword;
 
-        @Override
-        public void handle(final Callback[] callbacks) throws IOException,
-                UnsupportedCallbackException {
-            NameCallback nc = null;
-            PasswordCallback pc = null;
-            AuthorizeCallback ac = null;
+		public SaslDigestCallbackHandler(final String userName,
+				final byte[] token) {
+			logger.debug("SaslDigestCallback: Creating SaslDigestCallback handler "
+					+ "with user name: " + userName);
+			this.userName = userName;
+			userPassword = token;
+		}
 
-            for (final Callback callback : callbacks) {
-                if (callback instanceof AuthorizeCallback) {
-                    ac = (AuthorizeCallback) callback;
-                } else if (callback instanceof NameCallback) {
-                    nc = (NameCallback) callback;
-                } else if (callback instanceof PasswordCallback) {
-                    pc = (PasswordCallback) callback;
-                } else if (callback instanceof RealmCallback) {
-                    continue; // realm is ignored
-                } else {
-                    throw new UnsupportedCallbackException(callback,
-                            "handle: Unrecognized SASL DIGEST-MD5 Callback");
-                }
-            }
+		@Override
+		public void handle(final Callback[] callbacks) throws IOException,
+				UnsupportedCallbackException {
+			NameCallback nc = null;
+			PasswordCallback pc = null;
+			AuthorizeCallback ac = null;
 
-            if (nc != null) {
-                System.out
-                        .println("handle: SASL server DIGEST-MD5 callback: setting "
-                                + "username for client: " + userName);
+			for (final Callback callback : callbacks) {
+				if (callback instanceof AuthorizeCallback) {
+					ac = (AuthorizeCallback) callback;
+				} else if (callback instanceof NameCallback) {
+					nc = (NameCallback) callback;
+				} else if (callback instanceof PasswordCallback) {
+					pc = (PasswordCallback) callback;
+				} else if (callback instanceof RealmCallback) {
+					continue; // realm is ignored
+				} else {
+					throw new UnsupportedCallbackException(callback,
+							"handle: Unrecognized SASL DIGEST-MD5 Callback");
+				}
+			}
 
-                nc.setName(userName);
-            }
+			if (nc != null) {
+				logger.debug("handle: SASL server DIGEST-MD5 callback: setting "
+						+ "username for client: " + userName);
 
-            if (pc != null) {
-                final char[] password = SaslUtils.encodePassword(userPassword);
+				nc.setName(userName);
+			}
 
-                System.out
-                        .println("handle: SASL server DIGEST-MD5 callback: setting "
-                                + "password for client: " + userPassword);
+			if (pc != null) {
+				final char[] password = SaslUtils.encodePassword(userPassword);
 
-                pc.setPassword(password);
-            }
-            if (ac != null) {
+				logger.debug("handle: SASL server DIGEST-MD5 callback: setting "
+						+ "password for client: " + userPassword);
 
-                final String authid = ac.getAuthenticationID();
-                final String authzid = ac.getAuthorizationID();
+				pc.setPassword(password);
+			}
+			if (ac != null) {
 
-                if (authid.equals(authzid)) {
-                    ac.setAuthorized(true);
-                } else {
-                    ac.setAuthorized(false);
-                }
+				final String authid = ac.getAuthenticationID();
+				final String authzid = ac.getAuthorizationID();
 
-                if (ac.isAuthorized()) {
-                    System.out
-                            .println("handle: SASL server DIGEST-MD5 callback: setting "
-                                    + "canonicalized client ID: " + userName);
-                    ac.setAuthorizedID(authzid);
-                }
-            }
-        }
-    }
+				if (authid.equals(authzid)) {
+					ac.setAuthorized(true);
+				} else {
+					ac.setAuthorized(false);
+				}
 
-    private SaslServer saslServer;
+				if (ac.isAuthorized()) {
+					logger.debug("handle: SASL server DIGEST-MD5 callback: setting "
+							+ "canonicalized client ID: " + userName);
+					ac.setAuthorizedID(authzid);
+				}
+			}
+		}
+	}
 
-    private boolean useWrap = false;
+	private SaslServer saslServer;
 
-    SaslNettyServer(final String userName, final byte[] token)
-            throws IOException {
-        System.out.println("SaslNettyServer: Topology token is: " + userName
-                + " with authmethod " + SaslUtils.AUTH_DIGEST_MD5);
+	private boolean useWrap = false;
 
-        try {
+	public SaslNettyServer(final String userName, final byte[] token)
+			throws IOException {
+		logger.debug("SaslNettyServer: Topology token is: " + userName
+				+ " with authmethod " + SaslUtils.AUTH_DIGEST_MD5);
 
-            final SaslDigestCallbackHandler ch = new SaslNettyServer.SaslDigestCallbackHandler(
-                    userName, token);
+		try {
 
-            saslServer = Sasl.createSaslServer(SaslUtils.AUTH_DIGEST_MD5, null,
-                    SaslUtils.DEFAULT_REALM, SaslUtils.getSaslProps(), ch);
+			final SaslDigestCallbackHandler ch = new SaslNettyServer.SaslDigestCallbackHandler(
+					userName, token);
 
-        } catch (final SaslException e) {
-            System.err.println("SaslNettyServer: Could not create SaslServer: "
-                    + e);
-        }
+			saslServer = Sasl.createSaslServer(SaslUtils.AUTH_DIGEST_MD5, null,
+					SaslUtils.DEFAULT_REALM, SaslUtils.getSaslProps(), ch);
 
-    }
+		} catch (final SaslException e) {
+			logger.error("SaslNettyServer: Could not create SaslServer: "
+					+ e);
+		}
 
-    public void dispose() throws SaslException {
-        saslServer.dispose();
-    }
+	}
 
-    public String getNegotiatedQop() {
-        return (String) saslServer.getNegotiatedProperty(Sasl.QOP);
-    }
+	public void dispose() throws SaslException {
+		saslServer.dispose();
+	}
 
-    public String getUserName() {
-        return saslServer.getAuthorizationID();
-    }
+	public String getNegotiatedQop() {
+		return (String) saslServer.getNegotiatedProperty(Sasl.QOP);
+	}
 
-    public boolean isComplete() {
-        return saslServer.isComplete();
-    }
+	public String getUserName() {
+		return saslServer.getAuthorizationID();
+	}
 
-    public boolean isUseWrap() {
-        return useWrap;
-    }
+	public boolean isComplete() {
+		return saslServer.isComplete();
+	}
 
-    /**
-     * Used by SaslTokenMessage::processToken() to respond to server SASL
-     * tokens.
-     * 
-     * @param token
-     *            Server's SASL token
-     * @return token to send back to the server.
-     */
-    public byte[] response(final byte[] token) {
-        try {
-            System.out
-                    .println("response: Responding to input token of length: "
-                            + token.length);
-            final byte[] retval = saslServer.evaluateResponse(token);
-            System.out.println("response: Response token length: "
-                    + retval.length);
-            return retval;
-        } catch (final SaslException e) {
-            System.err
-                    .println("response: Failed to evaluate client token of length: "
-                            + token.length + " : " + e);
-            return null;
-        }
-    }
+	public boolean isUseWrap() {
+		return useWrap;
+	}
 
-    public void setUseWrap() {
-        final String qop = (String) saslServer.getNegotiatedProperty(Sasl.QOP);
-        System.out.println("saslServer Negotiated quality of service: " + qop);
-        useWrap = qop != null && !"auth".equalsIgnoreCase(qop);
-        System.out.println("Setting SaslNettyServer useWrap to " + useWrap);
-    }
+	/**
+	 * Used by SaslTokenMessage::processToken() to respond to server SASL
+	 * tokens.
+	 * 
+	 * @param token
+	 *            Server's SASL token
+	 * @return token to send back to the server.
+	 */
+	public byte[] response(final byte[] token) {
+		try {
+			logger.debug("response: Responding to input token of length: "
+					+ token.length);
+			final byte[] retval = saslServer.evaluateResponse(token);
+			logger.debug("response: Response token length: " + retval.length);
+			return retval;
+		} catch (final SaslException e) {
+			logger.error("response: Failed to evaluate client token of length: "
+					+ token.length + " : " + e);
+			return null;
+		}
+	}
 
-    public byte[] unwrap(final byte[] outgoing, final int off, final int len)
-            throws SaslException {
-        return saslServer.unwrap(outgoing, off, len);
-    }
+	public void setUseWrap() {
+		final String qop = (String) saslServer.getNegotiatedProperty(Sasl.QOP);
+		logger.debug("saslServer Negotiated quality of service: " + qop);
+		useWrap = qop != null && !"auth".equalsIgnoreCase(qop);
+		logger.debug("Setting SaslNettyServer useWrap to " + useWrap);
+	}
 
-    public byte[] wrap(final byte[] outgoing, final int off, final int len)
-            throws SaslException {
-        return saslServer.wrap(outgoing, off, len);
-    }
+	public byte[] unwrap(final byte[] outgoing, final int off, final int len)
+			throws SaslException {
+		return saslServer.unwrap(outgoing, off, len);
+	}
+
+	public byte[] wrap(final byte[] outgoing, final int off, final int len)
+			throws SaslException {
+		return saslServer.wrap(outgoing, off, len);
+	}
 }

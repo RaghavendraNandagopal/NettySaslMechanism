@@ -4,12 +4,17 @@ import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.handler.codec.frame.FrameDecoder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.shufflesort.nettysasl.model.ControlMessage;
 import com.shufflesort.nettysasl.model.SaslMessageToken;
 import com.shufflesort.nettysasl.model.UnixTime;
 
 public class MessageDecoder extends FrameDecoder {
+	
+	private static final Logger logger = LoggerFactory
+			.getLogger(MessageDecoder.class);
 
     /*
      * Each ControlMessage is encoded as: code (<0) ... short(2) Each
@@ -20,7 +25,7 @@ public class MessageDecoder extends FrameDecoder {
     protected Object decode(final ChannelHandlerContext ctx,
             final Channel channel, final ChannelBuffer buf) throws Exception {
 
-        System.out.println("sasl MessageDecoder called");
+        logger.debug("sasl MessageDecoder called");
 
         // Make sure that we have received at least a short
         long available = buf.readableBytes();

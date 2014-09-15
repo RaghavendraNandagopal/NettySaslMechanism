@@ -10,115 +10,115 @@ import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.handler.codec.oneone.OneToOneEncoder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.shufflesort.nettysasl.SaslNettyClient;
 import com.shufflesort.nettysasl.SaslNettyServer;
 
 public class WrapMessageEncoder extends OneToOneEncoder {
 
-    SaslNettyClient saslNettyClient = null;
-    SaslNettyServer saslNettyServer = null;
+	private static final Logger logger = LoggerFactory
+			.getLogger(WrapMessageEncoder.class);
 
-    public WrapMessageEncoder(final Object obj) {
-        if (obj instanceof SaslNettyClient) {
-            saslNettyClient = (SaslNettyClient) obj;
-        }
-        if (obj instanceof SaslNettyServer) {
-            saslNettyServer = (SaslNettyServer) obj;
-        }
-    }
+	SaslNettyClient saslNettyClient = null;
+	SaslNettyServer saslNettyServer = null;
 
-    private void disposeSasl() throws SaslException {
-        if (saslNettyClient != null) {
-            saslNettyClient.dispose();
-        }
-        if (saslNettyServer != null) {
-            saslNettyServer.dispose();
-        }
-    }
+	public WrapMessageEncoder(final Object obj) {
+		if (obj instanceof SaslNettyClient) {
+			saslNettyClient = (SaslNettyClient) obj;
+		}
+		if (obj instanceof SaslNettyServer) {
+			saslNettyServer = (SaslNettyServer) obj;
+		}
+	}
 
-    @Override
-    protected Object encode(final ChannelHandlerContext ctx,
-            final Channel channel, final Object obj) throws Exception {
-        byte[] saslToken = null;
+	private void disposeSasl() throws SaslException {
+		if (saslNettyClient != null) {
+			saslNettyClient.dispose();
+		}
+		if (saslNettyServer != null) {
+			saslNettyServer.dispose();
+		}
+	}
 
-        System.out.println("sasl Wrapping Message encoder called");
+	@Override
+	protected Object encode(final ChannelHandlerContext ctx,
+			final Channel channel, final Object obj) throws Exception {
+		byte[] saslToken = null;
 
-        // If authentication is not completed yet and channel connection is not
-        // established, then
-        // return the object as it is.
-        if (saslNettyClient == null && saslNettyServer == null) {
-            System.out
-                    .println("Wrapping Message encoder called, saslNettyClient and saslNettyServer are null hence returning the same object");
-            return obj;
-        }
+		logger.debug("sasl Wrapping Message encoder called");
 
-        // If sasl authentication is not completed yet.
-        if (saslNettyClient != null && !saslNettyClient.isComplete()) {
-            System.out
-                    .println("Wrapping Message encoder called, saslNettyClient is not authenticated at first place, hence returning the same object");
-            return obj;
-        }
+		// If authentication is not completed yet and channel connection is not
+		// established, then
+		// return the object as it is.
+		if (saslNettyClient == null && saslNettyServer == null) {
+			logger.debug("Wrapping Message encoder called, saslNettyClient and saslNettyServer are null hence returning the same object");
+			return obj;
+		}
 
-        if (saslNettyServer != null && !saslNettyServer.isComplete()) {
-            System.out
-                    .println("Wrapping Message encoder called, saslNettyServer is not authenticated at first place, hence returning the same object");
-            return obj;
-        }
+		// If sasl authentication is not completed yet.
+		if (saslNettyClient != null && !saslNettyClient.isComplete()) {
+			logger.debug("Wrapping Message encoder called, saslNettyClient is not authenticated at first place, hence returning the same object");
+			return obj;
+		}
 
-        // If wrap functionality is not required, then send
-        // the object as it is.
-        if (saslNettyClient != null && !saslNettyClient.isUseWrap()) {
-            System.out
-                    .println("Wrapping Message encoder called, saslNettyClient is not null but useWrap is false hence returning the same object");
-            return obj;
-        }
+		if (saslNettyServer != null && !saslNettyServer.isComplete()) {
+			logger.debug("Wrapping Message encoder called, saslNettyServer is not authenticated at first place, hence returning the same object");
+			return obj;
+		}
 
-        if (saslNettyServer != null && !saslNettyServer.isUseWrap()) {
-            System.out
-                    .println("Wrapping Message encoder called, saslNettyServer is not null but useWrap is false hence returning the same object");
-            return obj;
-        }
+		// If wrap functionality is not required, then send
+		// the object as it is.
+		if (saslNettyClient != null && !saslNettyClient.isUseWrap()) {
+			logger.debug("Wrapping Message encoder called, saslNettyClient is not null but useWrap is false hence returning the same object");
+			return obj;
+		}
 
-        System.out.println("sasl Wrapping ");
+		if (saslNettyServer != null && !saslNettyServer.isUseWrap()) {
+			logger.debug("Wrapping Message encoder called, saslNettyServer is not null but useWrap is false hence returning the same object");
+			return obj;
+		}
 
-        final ByteArrayOutputStream bytesOut = new ByteArrayOutputStream();
-        final ObjectOutputStream objOutStream = new ObjectOutputStream(bytesOut);
-        objOutStream.writeObject(obj);
-        objOutStream.flush();
-        final byte[] bytes = bytesOut.toByteArray();
-        bytesOut.close();
-        objOutStream.close();
+		logger.debug("sasl Wrapping ");
 
-        try {
-            System.out.println("Wrapping the sasl pay load");
+		final ByteArrayOutputStream bytesOut = new ByteArrayOutputStream();
+		final ObjectOutputStream objOutStream = new ObjectOutputStream(bytesOut);
+		objOutStream.writeObject(obj);
+		objOutStream.flush();
+		final byte[] bytes = bytesOut.toByteArray();
+		bytesOut.close();
+		objOutStream.close();
 
-            if (saslNettyClient != null) {
-                saslToken = saslNettyClient.wrap(bytes, 0, bytes.length);
-            } else {
-                saslToken = saslNettyServer.wrap(bytes, 0, bytes.length);
-            }
-        } catch (final SaslException se) {
-            try {
-                disposeSasl();
-            } catch (final SaslException igonored) {
+		try {
+			logger.debug("Wrapping the sasl pay load");
 
-            }
-            throw se;
-        }
+			if (saslNettyClient != null) {
+				saslToken = saslNettyClient.wrap(bytes, 0, bytes.length);
+			} else {
+				saslToken = saslNettyServer.wrap(bytes, 0, bytes.length);
+			}
+		} catch (final SaslException se) {
+			try {
+				disposeSasl();
+			} catch (final SaslException igonored) {
 
-        ChannelBufferOutputStream bout = null;
+			}
+			throw se;
+		}
 
-        if (saslToken != null) {
-            bout = new ChannelBufferOutputStream(
-                    ChannelBuffers.directBuffer(saslToken.length + 4));
-            bout.writeInt(saslToken.length);
-            if (saslToken.length > 0) {
-                bout.write(saslToken);
-            }
-            bout.close();
-            saslToken = null;
-        }
-        return bout.buffer();
-    }
+		ChannelBufferOutputStream bout = null;
+
+		if (saslToken != null) {
+			bout = new ChannelBufferOutputStream(
+					ChannelBuffers.directBuffer(saslToken.length + 4));
+			bout.writeInt(saslToken.length);
+			if (saslToken.length > 0) {
+				bout.write(saslToken);
+			}
+			bout.close();
+			saslToken = null;
+		}
+		return bout.buffer();
+	}
 }

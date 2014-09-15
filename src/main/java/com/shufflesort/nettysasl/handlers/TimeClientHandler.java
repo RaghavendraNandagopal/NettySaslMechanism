@@ -1,4 +1,4 @@
-package com.shufflesort.nettysasl;
+package com.shufflesort.nettysasl.handlers;
 
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFuture;
@@ -7,19 +7,24 @@ import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.shufflesort.nettysasl.model.UnixTime;
 
 public class TimeClientHandler extends SimpleChannelHandler {
 
     // private final ChannelBuffer buf = ChannelBuffers.dynamicBuffer();
+	
+	private static final Logger logger = LoggerFactory
+			.getLogger(TimeClientHandler.class);
 
     @Override
     public void channelConnected(final ChannelHandlerContext ctx,
             final ChannelStateEvent e) {
         final Channel ch = e.getChannel();
 
-        System.out.println("Connected to Server "
+        logger.debug("Connected to Server "
                 + ctx.getChannel().getRemoteAddress() + " from "
                 + ctx.getChannel().getLocalAddress());
 
@@ -41,7 +46,7 @@ public class TimeClientHandler extends SimpleChannelHandler {
             final MessageEvent e) {
 
         final UnixTime unixTime = (UnixTime) e.getMessage();
-        System.out.println("Server Unix Time: " + unixTime);
+        logger.info("Server Unix Time: " + unixTime);
         e.getChannel().close();
 
         /*

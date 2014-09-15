@@ -1,4 +1,4 @@
-package com.shufflesort.nettysasl;
+package com.shufflesort.nettysasl.client;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -15,6 +15,8 @@ import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import com.shufflesort.nettysasl.decoders.ClientUnwrapMessageDecoder;
 import com.shufflesort.nettysasl.encoders.ClientWrapMessageEncoder;
 import com.shufflesort.nettysasl.encoders.MessageEncoder;
+import com.shufflesort.nettysasl.handlers.SaslStormClientHandler;
+import com.shufflesort.nettysasl.handlers.TimeClientHandler;
 
 public class TimeClient {
 
